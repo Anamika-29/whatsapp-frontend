@@ -37,7 +37,7 @@ const Messages = ({ person, conversation }) => {
 
     const [messages, setMessages] = useState([]);
     const [incomingMessage, setIncomingMessage] = useState(null);
-    const [value, setValue] = useState();
+    const [value, setValue] = useState("");
     const [file, setFile] = useState();
     const [image, setImage] = useState();
 
@@ -99,7 +99,7 @@ const Messages = ({ person, conversation }) => {
             }
 
             socket.current.emit('sendMessage', message);
-
+// console.log("Inside Messages",message)
             await newMessages(message);
 
             setValue('');
@@ -107,6 +107,39 @@ const Messages = ({ person, conversation }) => {
             setImage('');
             setNewMessageFlag(prev => !prev);
         } 
+    }
+
+    const sendText2 = async (e) => {
+        if(!value) return;
+
+            let message = {};
+            if (!file) {
+                message = {
+                    senderId: account.sub,
+                    receiverId: receiverId,
+                    conversationId: conversation?._id,
+                    type: 'text',
+                    text: value
+                };
+            } else {
+                message = {
+                    senderId: account.sub,
+                    conversationId: conversation?._id,
+                    receiverId: receiverId,
+                    type: 'file',
+                    text: image
+                };
+            }
+
+            socket.current.emit('sendMessage', message);
+// console.log("Inside Messages",message)
+            await newMessages(message);
+
+            setValue('');
+            setFile();
+            setImage('');
+            setNewMessageFlag(prev => !prev);
+        
     }
 
     return (
@@ -127,6 +160,7 @@ const Messages = ({ person, conversation }) => {
                 setFile={setFile} 
                 file={file} 
                 setImage={setImage}
+                sendText2={sendText2}
             />
         </Wrapper>
     )

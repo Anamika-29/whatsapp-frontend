@@ -49,6 +49,7 @@ export const getMessages = async (id) => {
 
 export const newMessages = async (data) => {
     try {
+        console.log("Data",data);
         return await axios.post(`${url}/message/add`, data);
     } catch (error) {
         console.log('Error while calling newConversations API ', error);

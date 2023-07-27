@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
 
-import { EmojiEmotions, AttachFile, Mic } from '@mui/icons-material';
+import { useEffect,useState } from 'react';
+
+import { AttachFile, Mic,Send } from '@mui/icons-material';
 import { Box, styled, InputBase } from '@mui/material';
-
+import Picker from "emoji-picker-react";
+import { BsEmojiSmileFill } from "react-icons/bs";
 import { uploadFile } from '../../../service/api';
 
 const Container = styled(Box)`
@@ -16,6 +18,7 @@ const Container = styled(Box)`
         margin: 5px;
         color: #919191;
     }
+
 `;
 
 const Search = styled(Box)`
@@ -37,9 +40,15 @@ const ClipIcon = styled(AttachFile)`
     transform: 'rotate(40deg)'
 `;
 
+const PickerBox = styled(Picker)`
+    marginBottom:10px;
+`;
 
-const Footer = ({ sendText, value, setValue, setFile, file, setImage }) => {
 
+const Footer = ({ sendText,sendText2, value, setValue, setFile, file, setImage }) => {
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+  
     useEffect(() => {
         const getImage = async () => {
             if (file) {
@@ -48,6 +57,7 @@ const Footer = ({ sendText, value, setValue, setFile, file, setImage }) => {
                 data.append("file", file);
 
                 const response = await uploadFile(data);
+                console.log("setImage",response.data)
                 setImage(response.data);
             }
         }
@@ -59,29 +69,71 @@ const Footer = ({ sendText, value, setValue, setFile, file, setImage }) => {
         setFile(e.target.files[0]);
     }
 
+const handleEmojiPickerhideShow = () => {
+    setShowEmojiPicker(!showEmojiPicker);
+  };
+
+  const handleEmojiClick = ( emojiObject) => {
+    // console.log("EmojiObject",emojiObject);
+    // const emoji = emojiObject.srcElement.__reactProps$7cdsaexui5q.src;
+    // console.log(`${emoji}asdsad`);
+    setValue(prevValue => prevValue + emojiObject.emoji);
+ };
+
+ const handleInputChange = (e) => {
+    const inputText = e.target.value;
+    setValue(inputText);
+
+    // If there is any text, show the send button; otherwise, show the mic button
+    setIsTyping(!!inputText.trim());
+  };
+
+  const handleSendText2 = (e) =>{
+    sendText2(e);
+    setIsTyping(false);
+
+  }
+
+  const handleSendText = (e) =>{
+    sendText(e);
+    setIsTyping(false);
+    
+  }
+
+
     return (
         <Container>
-            <EmojiEmotions />
-            <label htmlFor="fileInput">
-                <ClipIcon />
+            <div className="emoji">
+          <BsEmojiSmileFill onClick={handleEmojiPickerhideShow} />
+          {showEmojiPicker && <PickerBox onEmojiClick={handleEmojiClick} />}
+        </div>
+             <label htmlFor="fileInput">
+                 <ClipIcon />
             </label>
             <input
                 type='file'
                 id="fileInput"
                 style={{ display: 'none' }}
-                onChange={(e) => onFileChange(e)}
-            />
+                 onChange={(e) => onFileChange(e)}
+             />
 
-            <Search>
-                <InputField
+             <Search>
+                 <InputField
                     placeholder="Type a message"
                     inputProps={{ 'aria-label': 'search' }}
-                    onChange={(e) => setValue(e.target.value)}
-                    onKeyPress={(e) => sendText(e)}
+                    onChange={handleInputChange} 
+                    // onFocus={() => setShowEmojiPicker(true)}
+                    // onBlur={() => setShowEmojiPicker(false)}
+                    onKeyPress={(e) => handleSendText(e)}
                     value={value}
+
                 />
             </Search>
-            <Mic />
+            {isTyping ? (
+        <Send onClick={(e) => handleSendText2(e)}/>
+      ) : (
+        <Mic />
+      )}
         </Container>
     )
 }
